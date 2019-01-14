@@ -9,9 +9,6 @@ provider "aws" {
 # Data
 data "aws_vpc" "default" {}
 data "aws_availability_zones" "available" {}
-//data "aws_subnet_ids" "all" {
-//vpc_id = "${data.aws_vpc.default.id}"
-//}
 
 # Resources
 
