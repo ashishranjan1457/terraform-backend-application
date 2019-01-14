@@ -13,6 +13,32 @@ data "aws_availability_zones" "available" {}
 //vpc_id = "${data.aws_vpc.default.id}"
 //}
 
+# Resources
+
+resource "aws_security_group" "allow_all" {
+  name        = "allow_all"
+  description = "Allow all inbound traffic"
+
+  ingress {
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+	egress {
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "allow_all"
+  }
+}
+
+
 resource "aws_security_group" "mysql_secgroup" {
 	vpc_id = "${data.aws_vpc.default.id}"
 
@@ -22,6 +48,10 @@ resource "aws_security_group" "mysql_secgroup" {
 		protocol = "tcp"
 		cidr_blocks = ["0.0.0.0/0"]
 	}
+
+	tags = {
+    Name = "mysql_security_group"
+  }
 }
 
 resource "aws_db_instance" "app_database" {
@@ -40,6 +70,11 @@ resource "aws_db_instance" "app_database" {
   publicly_accessible             = "${var.publicly_accessible}"
   storage_encrypted               = "${var.storage_encrypted}"
   apply_immediately               = "${var.apply_immediately}"
+
+	tags = {
+    Name = "rds_mysql_database"
+  }
+
 }
 
 # INSTANCES #
@@ -47,21 +82,27 @@ resource "aws_instance" "nodejs" {
   ami           = "${var.ec2_instance_ami_id}"
   instance_type = "${var.ec2_instance_type}"
   key_name        = "${var.key_name}"
+	vpc_security_group_ids = ["${aws_security_group.allow_all.id}"]
 
   connection {
     user        = "${var.ec2_user}"
     private_key = "${file(var.private_key_path)}"
   }
 
+	tags = {
+    Name = "nodejs_server"
+  }
+
   provisioner "remote-exec" {
     inline = [
-      "curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.32.0/install.sh | bash",
-      ". ~/.nvm/nvm.sh",
-      "nvm install 4.4.5",
+      "sudo apt update",
+      "sudo apt install -y nodejs npm",
       "git clone https://github.com/ashishranjan1457/rest-crud.git",
       "cd rest-crud",
+			"export DB_ENDPOINT=${aws_db_instance.app_database.address}",
+			"envsubst < server.js.template > server.js",
       "npm install",
-      "nohup node server.js &"
+      "nohup nodejs server.js > /tmp/test.txt 2>&1 </dev/null &"
     ]
   }
 }
