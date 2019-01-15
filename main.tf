@@ -62,8 +62,8 @@ resource "aws_db_instance" "app_database" {
   snapshot_identifier             = "${var.snapshot_identifier}"
   multi_az                        = "${var.multi_az}"
   name                            = "${var.database}"
-  username                        = "${var.username}"
-  password                        = "${var.password}"
+  username                        = "${var.db_username}"
+  password                        = "${var.db_password}"
   publicly_accessible             = "${var.publicly_accessible}"
   storage_encrypted               = "${var.storage_encrypted}"
   apply_immediately               = "${var.apply_immediately}"
@@ -98,7 +98,7 @@ resource "aws_instance" "nodejs" {
       "cd rest-crud",
 			"export DB_ENDPOINT=${aws_db_instance.app_database.address}",
 			"export DB_USERNAME=${var.db_username}",
-      "export DB_PASSWORD=${var.db_username}",
+      "export DB_PASSWORD=${var.db_password}",
 			"envsubst < server.js.template > server.js",
       "npm install",
       "nohup nodejs server.js > /tmp/test.txt 2>&1 </dev/null &"

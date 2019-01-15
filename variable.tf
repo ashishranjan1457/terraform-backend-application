@@ -18,8 +18,8 @@ variable "skip_final_snapshot" {}
 variable "rds_identifier" {}
 variable "apply_immediately" {}
 variable "database" {}
-variable "username" {}
-variable "password" {}
+variable "db_username" {}
+variable "db_password" {}
 variable "snapshot_identifier" {}
 variable "ec2_instance_ami_id" {}
 variable "ec2_instance_type" {}
