@@ -13,7 +13,6 @@ data "aws_availability_zones" "available" {}
 # Resources
 
 resource "aws_security_group" "allow_all" {
-  name        = "allow_all"
   description = "Allow all inbound traffic"
 
   ingress {
@@ -38,6 +37,7 @@ resource "aws_security_group" "allow_all" {
 
 resource "aws_security_group" "mysql_secgroup" {
 	vpc_id = "${data.aws_vpc.default.id}"
+	description = "Allow traffic for mysql port"
 
 	ingress {
 		from_port = "${var.mysql_port}"
@@ -97,6 +97,8 @@ resource "aws_instance" "nodejs" {
       "git clone https://github.com/ashishranjan1457/rest-crud.git",
       "cd rest-crud",
 			"export DB_ENDPOINT=${aws_db_instance.app_database.address}",
+			"export DB_USERNAME=${var.db_username}",
+      "export DB_PASSWORD=${var.db_username}",
 			"envsubst < server.js.template > server.js",
       "npm install",
       "nohup nodejs server.js > /tmp/test.txt 2>&1 </dev/null &"
